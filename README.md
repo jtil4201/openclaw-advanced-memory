@@ -1,8 +1,8 @@
-# 🧠 Memory V2 — Three-Tier AI Agent Memory System
+# 🧠 Memory V2 - Three-Tier AI Agent Memory System
 
 **Give your AI agent persistent, searchable, self-curating memory.**
 
-Memory V2 is a three-tier memory architecture for AI assistants running on [OpenClaw](https://github.com/openclaw/openclaw) (or similar agent frameworks). It captures conversation turns in real-time, stores them as searchable embeddings, and uses a local LLM to curate long-term "gems" — facts, decisions, and lessons worth remembering forever.
+Memory V2 is a three-tier memory architecture for AI assistants running on [OpenClaw](https://github.com/openclaw/openclaw) (or similar agent frameworks). It captures conversation turns in real-time, stores them as searchable embeddings, and uses a local LLM to curate long-term "gems" - facts, decisions, and lessons worth remembering forever.
 
 No cloud APIs. No subscriptions. Runs entirely on your own hardware.
 
@@ -20,14 +20,14 @@ No cloud APIs. No subscriptions. Runs entirely on your own hardware.
                │
                ▼
 ┌──────────────────────────┐
-│   🔥 HOT — Redis Buffer  │  ← mem-capture (systemd, every 30s)
+│   🔥 HOT - Redis Buffer  │  ← mem-capture (systemd, every 30s)
 │   Raw conversation turns  │    Watches transcript files, dedupes,
 │   Ephemeral (~30 min)     │    buffers new turns to Redis list
 └──────────────┬───────────┘
                │
                ▼  (cron: every 30 min)
 ┌──────────────────────────┐
-│  🌡️ WARM — Qdrant         │  ← mem-warm (cron)
+│  🌡️ WARM - Qdrant         │  ← mem-warm (cron)
 │  Chunked + embedded       │    Drains Redis → chunks by session
 │  Searchable conversations  │    → embeds → stores in Qdrant
 │  Auto-expires after 7 days │    Collection: watts_warm
@@ -35,7 +35,7 @@ No cloud APIs. No subscriptions. Runs entirely on your own hardware.
                │
                ▼  (cron: nightly at 2 AM)
 ┌──────────────────────────┐
-│  🧊 COLD — Qdrant         │  ← mem-curate (cron)
+│  🧊 COLD - Qdrant         │  ← mem-curate (cron)
 │  LLM-curated gems         │    Reads day's warm memories
 │  Structured metadata       │    → LLM extracts gems
 │  Permanent storage         │    → embeds → stores in Qdrant
@@ -51,7 +51,7 @@ No cloud APIs. No subscriptions. Runs entirely on your own hardware.
 | 🌡️ **Warm** | Fast | 7 days | Chunked conversations | "What did we talk about yesterday?" |
 | 🧊 **Cold** | Fast | Forever | Curated gems | "What was the decision on pricing?" |
 
-The hot tier catches everything. The warm tier makes it searchable. The cold tier distills it into what actually matters — using an LLM that reads the full day's context and extracts structured insights.
+The hot tier catches everything. The warm tier makes it searchable. The cold tier distills it into what actually matters - using an LLM that reads the full day's context and extracts structured insights.
 
 ---
 
@@ -66,9 +66,9 @@ The hot tier catches everything. The warm tier makes it searchable. The cold tie
 
 ### Ollama Models
 
-- **Embeddings:** `snowflake-arctic-embed2` — 1024-dim vectors, solid semantic search
-- **Curation:** `qwen2.5:7b` — Reads conversations, extracts structured gems
-  - We tested 3b, 7b, and 14b. The 7b model curates *better* than 14b — more thorough metadata extraction, catches subtle details. 14b was faster but missed things.
+- **Embeddings:** `snowflake-arctic-embed2` - 1024-dim vectors, solid semantic search
+- **Curation:** `qwen2.5:7b` - Reads conversations, extracts structured gems
+  - We tested 3b, 7b, and 14b. The 7b model curates *better* than 14b - more thorough metadata extraction, catches subtle details. 14b was faster but missed things.
 
 ---
 
@@ -159,7 +159,7 @@ Edit the connection details at the top of each script if your infrastructure dif
 Session transcript → mem-capture → Redis buffer
 ```
 
-The capture service is smart about first runs — it indexes current file positions without ingesting old history, so you won't flood your memory with past conversations.
+The capture service is smart about first runs - it indexes current file positions without ingesting old history, so you won't flood your memory with past conversations.
 
 **Noise filtering:**
 - Skips tool results, tool calls, and system metadata
@@ -190,7 +190,7 @@ Warm memories are immediately searchable. They auto-expire after 7 days (cleaned
 1. Pulls all warm memories from yesterday
 2. Builds a chronological transcript
 3. Sends it to a local LLM (`qwen2.5:7b`) with a structured prompt
-4. The LLM extracts "gems" — decisions, milestones, lessons, people info
+4. The LLM extracts "gems" - decisions, milestones, lessons, people info
 5. Each gem gets embedded and stored in `watts_cold`
 6. Old warm memories (>7 days) are cleaned up
 
@@ -215,7 +215,7 @@ Qdrant watts_warm → build transcript → LLM curation → Qdrant watts_cold
 Each gem is structured:
 ```json
 {
-  "gem": "Chose DistilBERT over TinyBERT for V2 — 99.69% F1, zero false positives",
+  "gem": "Chose DistilBERT over TinyBERT for V2 - 99.69% F1, zero false positives",
   "context": "A/B tested both architectures on the Volt red team suite",
   "date": "2026-02-10",
   "categories": ["decision", "technical"],
@@ -304,7 +304,7 @@ memory-v2/
 
 ## Qdrant Collections
 
-### `watts_warm` — Mid-Term Memory
+### `watts_warm` - Mid-Term Memory
 | Field | Type | Description |
 |-------|------|-------------|
 | `text` | string | Chunked conversation text |
@@ -317,7 +317,7 @@ memory-v2/
 | `turn_count` | integer | Number of turns in chunk |
 | `content_hash` | string | MD5 hash for dedup |
 
-### `watts_cold` — Long-Term Curated Gems
+### `watts_cold` - Long-Term Curated Gems
 | Field | Type | Description |
 |-------|------|-------------|
 | `gem` | string | The core insight/fact |
@@ -335,12 +335,12 @@ memory-v2/
 
 ## Adapting for Other Frameworks
 
-Memory V2 was built for OpenClaw, but the only framework-specific piece is **`mem_capture.py`** — specifically how it reads session transcripts.
+Memory V2 was built for OpenClaw, but the only framework-specific piece is **`mem_capture.py`** - specifically how it reads session transcripts.
 
 To adapt for another agent framework:
 
-1. **Replace `get_active_sessions()`** — Point it at wherever your framework writes conversation logs
-2. **Replace `process_new_lines()`** — Parse your framework's log format instead of OpenClaw's JSONL
+1. **Replace `get_active_sessions()`** - Point it at wherever your framework writes conversation logs
+2. **Replace `process_new_lines()`** - Parse your framework's log format instead of OpenClaw's JSONL
 3. Everything else (warm, curate, recall) is framework-agnostic
 
 The capture script expects each conversation turn to have:
@@ -377,25 +377,25 @@ If your framework provides those three fields, you're good.
 ## Tuning
 
 ### Chunk Size
-`CHUNK_SIZE = 8` in `mem_warm.py` — turns per chunk. Smaller chunks = more granular search but more storage. Larger chunks = more context per result but fuzzier matches. 8 is a sweet spot for conversational AI.
+`CHUNK_SIZE = 8` in `mem_warm.py` - turns per chunk. Smaller chunks = more granular search but more storage. Larger chunks = more context per result but fuzzier matches. 8 is a sweet spot for conversational AI.
 
 ### Warm Retention
-`WARM_RETENTION_DAYS = 7` in `mem_curate.py` — how long warm memories stick around before cleanup. Extend if your curation schedule is less frequent.
+`WARM_RETENTION_DAYS = 7` in `mem_curate.py` - how long warm memories stick around before cleanup. Extend if your curation schedule is less frequent.
 
 ### Recency Decay
-`RECENCY_HALF_LIFE_DAYS = 30` in `mem_recall.py` — how fast old results lose ranking priority. Lower = more recency-biased. Higher = more balanced.
+`RECENCY_HALF_LIFE_DAYS = 30` in `mem_recall.py` - how fast old results lose ranking priority. Lower = more recency-biased. Higher = more balanced.
 
 ### Curation Model
-`CURATOR_MODEL = "qwen2.5:7b"` in `mem_curate.py` — the LLM used for overnight curation. We tested:
-- **3b:** Fast but shallow — misses nuance
-- **7b:** Best quality — thorough metadata, catches subtle details ✅
+`CURATOR_MODEL = "qwen2.5:7b"` in `mem_curate.py` - the LLM used for overnight curation. We tested:
+- **3b:** Fast but shallow - misses nuance
+- **7b:** Best quality - thorough metadata, catches subtle details ✅
 - **14b:** Faster than 7b on GPU but actually extracted fewer gems
 
 ### Embedding Model
-`EMBED_MODEL = "snowflake-arctic-embed2"` in `embeddings.py` — 1024-dim vectors. Good balance of quality and speed. If you swap this, update `EMBEDDING_DIM` in `setup_collections.py` and recreate collections.
+`EMBED_MODEL = "snowflake-arctic-embed2"` in `embeddings.py` - 1024-dim vectors. Good balance of quality and speed. If you swap this, update `EMBEDDING_DIM` in `setup_collections.py` and recreate collections.
 
 ### Curator Prompt
-`curator_prompt.md` — the system prompt that tells the LLM what to extract and what to skip. Customize this for your use case. The current prompt is tuned for a technical assistant that tracks decisions, infrastructure, people, and projects.
+`curator_prompt.md` - the system prompt that tells the LLM what to extract and what to skip. Customize this for your use case. The current prompt is tuned for a technical assistant that tracks decisions, infrastructure, people, and projects.
 
 ---
 
@@ -421,7 +421,7 @@ curl http://localhost:6333/collections/watts_cold
 
 ## How We Use It
 
-This system powers [Watts](https://github.com/openclaw/openclaw) — an AI assistant running 24/7 on a home server. Watts manages infrastructure, writes code, monitors services, and maintains context across sessions.
+This system powers [Watts](https://github.com/openclaw/openclaw) - an AI assistant running 24/7 on a home server. Watts manages infrastructure, writes code, monitors services, and maintains context across sessions.
 
 Before Memory V2, every new session started from scratch. Now:
 - Warm memories give instant recall of the last week's conversations
@@ -433,4 +433,4 @@ Before Memory V2, every new session started from scratch. Now:
 
 ## License
 
-MIT — use it, fork it, make your agent remember things.
+MIT - use it, fork it, make your agent remember things.
