@@ -1,0 +1,4 @@
+#!/bin/bash
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+echo "⚡ Running mem-warm manually..."
+python3 "$SCRIPT_DIR/scripts/mem_warm.py"

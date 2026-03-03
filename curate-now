@@ -1,0 +1,5 @@
+#!/bin/bash
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+DATE=${1:-$(date -u -d "yesterday" +%Y-%m-%d)}
+echo "⚡ Running mem-curate for $DATE..."
+python3 "$SCRIPT_DIR/scripts/mem_curate.py" "$DATE"

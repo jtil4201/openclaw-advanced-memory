@@ -1,0 +1,16 @@
+[Unit]
+Description=OpenClaw Memory Capture - watches session transcripts and buffers to Redis
+After=network.target
+
+[Service]
+Type=simple
+# UPDATE THIS PATH to your openclaw-advanced-memory location
+ExecStart=/usr/bin/python3 /path/to/openclaw-advanced-memory/scripts/mem_capture.py
+WorkingDirectory=/path/to/workspace
+Restart=on-failure
+RestartSec=30
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=default.target
